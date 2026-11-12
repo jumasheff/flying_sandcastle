@@ -2,7 +2,7 @@
 
 <ready-issues>
 
-!`gh issue list --state open --label "{{READY_LABEL}}" --limit 100 --json number,title,body,labels,comments --jq '[.[] | {number, title, body, labels: [.labels[].name], comments: [.comments[].body]}]'`
+!`gh issue list --state open --label "{{READY_LABEL}}" --limit 100 --json number,title,body,labels,comments,blockedBy --jq '[.[] | {number, title, body, labels: [.labels[].name], comments: [.comments[].body], openBlockers: [(.blockedBy.nodes? // .blockedBy // [])[]? | select(.state == "OPEN") | .number]}]'`
 
 </ready-issues>
 
@@ -20,6 +20,7 @@ The ready list is the only source of work. Do not query GitHub for more issues.
 
 Build a dependency graph of the ready issues. Issue B is **blocked** if:
 
+- `openBlockers` is not empty (GitHub issue dependencies), or the body says `Blocked by #N` / `Depends on #N` and #N is still open;
 - B needs code, infrastructure, an API shape or a decision that another ready issue introduces;
 - B and another ready issue will change the same files or modules, so working on them at the same time will cause merge conflicts;
 - B needs code from an **in-review** issue. Its pull request is not merged yet, so that code is not on the base branch.

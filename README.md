@@ -5,7 +5,7 @@
 **GitHub issue → агенттер (Claude Code, Docker ичинде) → Pull Request → сиз merge кыласыз.**
 
 ```
-Телефон / PC ──▶ GitHub: issue + `Sandcastle` label
+Телефон / PC ──▶ GitHub: issue + `ready-for-agent` label
                      │
 Hetzner VPS ── systemd timer (ар 20 мүнөт) ── scripts/run.sh
                      │
@@ -19,11 +19,12 @@ Hetzner VPS ── systemd timer (ар 20 мүнөт) ── scripts/run.sh
 
 | Label | Мааниси | Ким коёт |
 |---|---|---|
-| `Sandcastle` | Иштөөгө даяр | Сиз |
+| `needs-triage` | Жаңы идея, сиздин карооңузду күтөт | Кофаундер (issue-intake) |
+| `ready-for-agent` | Иштөөгө даяр | Сиз |
 | `sandcastle:in-review` | PR ачылды, сиздин review'ду күтөт | Фабрика |
 | `sandcastle:needs-human` | Агент токтоп калды, issue'нун комментарийлерин окуңуз | Фабрика |
 
-Label'дерди фабрика биринчи иштегенде өзү түзөт.
+Label'дер Matt Pocock'тун triage label'дерине дал келет (`docs/agents/triage-labels.md`). Жетишпегендерин фабрика биринчи иштегенде өзү түзөт, ал эми бар label'дерге тийбейт.
 
 ---
 
@@ -89,13 +90,13 @@ nano /etc/factory/secrets.env
 
 ### 5. Биринчи ишке киргизүү
 
-Биринчи run'ду кол менен иштетиңиз. Ал репого үч label'ди түзөт жана "No issues labelled 'Sandcastle'" деп бүтөт:
+Биринчи run'ду кол менен иштетиңиз. Ал жетишпеген label'дерди түзөт жана "No issues labelled 'ready-for-agent'" деп бүтөт:
 
 ```bash
 systemctl start factory && journalctl -u factory -f
 ```
 
-Андан кийин долбоордо бир issue түзүп, ага `Sandcastle` label'ин коюп, кайра иштетиңиз. Бул жолу Docker image build болот, ага 3–5 мүнөт кетет:
+Андан кийин долбоордо бир issue түзүп, ага `ready-for-agent` label'ин коюп, кайра иштетиңиз. Бул жолу Docker image build болот, ага 3–5 мүнөт кетет:
 
 ```bash
 systemctl start factory && journalctl -u factory -f
@@ -123,13 +124,17 @@ tailscale up --ssh
 
 ## Күнүмдүк иш
 
-1. **Тапшырма:** GitHub'да issue жазасыз. Эмне керек, кандай болушу керек, кайсы issue'дан көз каранды экенин ("Depends on #3") жазыңуз. `Sandcastle` label'ин коёсуз.
+1. **Тапшырма:** GitHub'да issue жазасыз. Эмне керек, кандай болушу керек, кайсы issue'дан көз каранды экенин ("Blocked by #3" же GitHub'дагы "Blocked by" байланышы) жазыңуз. `ready-for-agent` label'ин коёсуз.
 2. **Күтүү:** 20 мүнөттүн ичинде фабрика ишти баштайт. Бүткөндө issue'га PR шилтемеси келет.
 3. **Review:** PR'ды карайсыз. Жакса → **Merge**, issue өзү жабылат.
-4. **Өзгөртүү керек болсо:** PR'га комментарий жазып, issue'га `Sandcastle` label'ин кайра коёсуз. Агент комментарийлерди окуп, ошол эле branch'ты улантат.
-5. **`sandcastle:needs-human`:** агенттин issue'дагы комментарийин окуп, issue'ну тактап, `Sandcastle` label'ин кайра коюңуз.
+4. **Өзгөртүү керек болсо:** PR'га комментарий жазып, issue'га `ready-for-agent` label'ин кайра коёсуз. Агент комментарийлерди окуп, ошол эле branch'ты улантат.
+5. **`sandcastle:needs-human`:** агенттин issue'дагы комментарийин окуп, issue'ну тактап, `ready-for-agent` label'ин кайра коюңуз.
 
 Issue'лар бири-биринен көз каранды болсо, planner алардын тартибин сактайт. Мисалы, #5 #3'кө көз каранды болсо, #3'түн PR'ы merge болмоюнча #5 башталбайт.
+
+## Staging
+
+`main` өзгөргөн сайын фабрика аны `turna-staging`'ге deploy кылат жана миграцияларды өзүнчө staging Supabase базасына колдонот. GitHub Actions'тын кереги жок. Орнотуу тартиби [docs/staging.md](docs/staging.md) файлында.
 
 ## Кофаундер / командалаш
 
@@ -186,7 +191,7 @@ rm -rf /var/lib/factory/project
 
 - **Сервер:** айына болжол менен €6–8 (Hetzner CX33).
 - **Claude:** Max жазылуусунун лимити колдонулат. Ал сиздин кадимки Claude Code колдонууңуз менен **бөлүшүлөт**. Лимит бүтсө, run катага учурайт, label өзгөрбөйт, кийинки run кайра аракет кылат.
-- `Sandcastle` label'и бар issue жок болсо, агенттер таптакыр иштебейт, лимит коротулбайт.
+- `ready-for-agent` label'и бар issue жок болсо, агенттер таптакыр иштебейт, лимит коротулбайт.
 
 ## Коопсуздук
 
@@ -201,9 +206,11 @@ rm -rf /var/lib/factory/project
 | `sandcastle/main.mts` | Оркестрация: plan → implement → review → PR |
 | `sandcastle/*-prompt.md` | Агенттердин промпттору |
 | `sandcastle/Dockerfile` | Sandbox image (Node 22, gh, Claude Code) |
-| `scripts/run.sh` | Бир run: репону жаңыртуу, image, label'дер, `main.mts` |
-| `infra/setup.sh` | Серверди орнотуу (Docker, Node, gh, Tailscale, systemd) |
+| `scripts/run.sh` | Бир run: репону жаңыртуу, label'дер, staging, image, `main.mts` |
+| `scripts/deploy-staging.sh` | `main` → staging: миграциялар + `fly deploy` |
+| `infra/setup.sh` | Серверди орнотуу (Docker, Node, gh, flyctl, Tailscale, systemd) |
 | `infra/cloud-init.yaml` | Hetzner'де сервер түзүп жатканда чапталат |
 | `infra/factory.service`, `.timer` | systemd: ар 20 мүнөттө бир run |
 | `templates/project/` | Долбоордун репосуна көчүрүлүүчү файлдар (`issue-intake` skill) |
 | `docs/cofounder.md` | Кофаундерди кошуу боюнча нускама |
+| `docs/staging.md` | Staging'ди орнотуу (Fly + өзүнчө Supabase) |

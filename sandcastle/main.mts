@@ -37,7 +37,7 @@ const prompt = (name: string) => join(here, name);
 const env = (key: string, fallback: string) => process.env[key] || fallback;
 
 const BASE_BRANCH = env("BASE_BRANCH", "main");
-const READY_LABEL = env("READY_LABEL", "Sandcastle");
+const READY_LABEL = env("READY_LABEL", "ready-for-agent");
 const REVIEW_LABEL = env("REVIEW_LABEL", "sandcastle:in-review");
 const HUMAN_LABEL = env("HUMAN_LABEL", "sandcastle:needs-human");
 const PLANNER_MODEL = env("PLANNER_MODEL", "opus");
@@ -121,6 +121,9 @@ const publish = async (issue: { id: string; title: string; branch: string }): Pr
   if (existing) return existing;
 
   const log = await run("git", ["log", "--format=- %s", `${BASE_BRANCH}..${issue.branch}`]);
+  const migrations = await run("git", [
+    "diff", "--name-only", `${BASE_BRANCH}...${issue.branch}`, "--", "supabase/migrations",
+  ]);
   const body = [
     `Closes #${issue.id}`,
     "",
@@ -129,6 +132,17 @@ const publish = async (issue: { id: string; title: string; branch: string }): Pr
     "## Commits",
     log,
     "",
+    ...(migrations
+      ? [
+          "> [!WARNING]",
+          "> This PR adds database migrations. They are applied to the staging database",
+          "> after merge, before staging is deployed. Apply them to production by hand",
+          "> (`npx supabase db push --remote`) before deploying production.",
+          ">",
+          ...migrations.split("\n").map((f) => `> - \`${f}\``),
+          "",
+        ]
+      : []),
     `To request changes: comment on this PR, then put the \`${READY_LABEL}\` label back on #${issue.id}.`,
   ].join("\n");
 

@@ -20,6 +20,10 @@ set -a
 source "$CONFIG_DIR/factory.env"
 # shellcheck disable=SC1091
 source "$CONFIG_DIR/secrets.env"
+if [ -f "$CONFIG_DIR/host-secrets.env" ]; then
+  # shellcheck disable=SC1091
+  source "$CONFIG_DIR/host-secrets.env"
+fi
 set +a
 : "${TARGET_REPO:?set TARGET_REPO in $CONFIG_DIR/factory.env}"
 : "${CLAUDE_CODE_OAUTH_TOKEN:?set CLAUDE_CODE_OAUTH_TOKEN in $CONFIG_DIR/secrets.env}"
@@ -56,11 +60,25 @@ for b in $(git for-each-ref --format='%(refname:short) %(upstream:track)' refs/h
   git branch -D "$b" || true
 done
 
-# --- Labels (idempotent) ----------------------------------------------------
-gh label create "$READY_LABEL" --color 0E8A16 --description "Ready for the Sandcastle factory" --force >/dev/null
-gh label create "$REVIEW_LABEL" --color FBCA04 --description "Sandcastle opened a PR" --force >/dev/null
-gh label create "$HUMAN_LABEL" --color D93F0B --description "Sandcastle is stuck, needs a human" --force >/dev/null
-gh label create "${IDEA_LABEL:-idea}" --color C5DEF5 --description "New idea, waiting for approval" --force >/dev/null
+# --- Labels -------------------------------------------------------------------
+# Create the ones that are missing. Never overwrite labels the repo already has
+# (the triage labels belong to the project).
+existing=$(gh label list --limit 200 --json name --jq '.[].name')
+ensure_label() {
+  grep -qxF "$1" <<<"$existing" || gh label create "$1" --color "$2" --description "$3" >/dev/null
+}
+ensure_label "$READY_LABEL" 0E8A16 "Fully specified, ready for an AFK agent"
+ensure_label "${IDEA_LABEL:-needs-triage}" C5DEF5 "Maintainer needs to evaluate this issue"
+ensure_label "$REVIEW_LABEL" FBCA04 "Sandcastle opened a PR"
+ensure_label "$HUMAN_LABEL" D93F0B "Sandcastle is stuck, needs a human"
+
+# --- Staging ------------------------------------------------------------------
+# Deploy BASE_BRANCH to staging when it changed. A failed deploy is reported
+# but does not stop the agents.
+if [ -n "${STAGING_APP:-}" ]; then
+  WORK_DIR="$WORK_DIR" "$FACTORY_DIR/scripts/deploy-staging.sh" \
+    || echo "WARNING: staging deploy failed, see the log above." >&2
+fi
 
 # Skip the agents (and Claude usage) when there is nothing to do.
 ready=$(gh issue list --state open --label "$READY_LABEL" --limit 1 --json number --jq length)
@@ -84,4 +102,6 @@ if [ "$(cat "$WORK_DIR/image.stamp" 2>/dev/null)" != "$stamp" ] || ! docker imag
 fi
 
 # --- Go ------------------------------------------------------------------------
+# Host-only secrets stay out of the agent run.
+unset FLY_API_TOKEN STAGING_DB_URL
 exec "$FACTORY_DIR/node_modules/.bin/tsx" "$FACTORY_DIR/sandcastle/main.mts"

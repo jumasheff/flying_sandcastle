@@ -5,13 +5,13 @@
 ```
 Кофаундер (iPhone, Claude app → Code, үн менен)
    └─ issue-intake skill: 1–3 суроо → кыскача корутунду → "ок"
-        └─ GitHub issue, label: `idea`
-Сиз: issue'ну окуп, `idea` → `Sandcastle` label'ине алмаштырасыз
-   └─ фабрика → PR → preview шилтеме (Fly.io)
+        └─ GitHub issue, label: `needs-triage`
+Сиз: issue'ну окуп, `needs-triage` → `ready-for-agent` label'ине алмаштырасыз
+   └─ фабрика → PR → сиз merge кыласыз → staging (turna-staging.fly.dev)
 Кофаундер: issue'га келген PR шилтемесин ачып, натыйжаны көрөт
 ```
 
-Кофаундердин Claude сессиялары **анын өзүнүн** Claude аккаунтунун лимитин коротот. Фабрика болсо сиздин Max токениңиз менен иштейт. Ошондуктан фабрикага эмне берилерин `Sandcastle` label'и аркылуу сиз гана чечесиз.
+Кофаундердин Claude сессиялары **анын өзүнүн** Claude аккаунтунун лимитин коротот. Фабрика болсо сиздин Max токениңиз менен иштейт. Ошондуктан фабрикага эмне берилерин `ready-for-agent` label'и аркылуу сиз гана чечесиз.
 
 ---
 
@@ -39,9 +39,9 @@ cp -r flying_sandcastle/templates/project/.claude turna/
 
 Андан кийин `templates/project/CLAUDE.snippet.md`'деги бөлүмдү `turna/CLAUDE.md`'ге кошуп, commit кылып, `main`'ге push кылыңыз.
 
-### 4. `idea` label'и
+### 4. Label'дер
 
-Фабрика бул label'ди кийинки run'да өзү түзөт. Аны GitHub'да кол менен да түзсөңүз болот.
+`needs-triage` жана `ready-for-agent` turna'да буга чейин эле бар (Matt Pocock'тун triage label'дери). Жаңы label түзүүнүн кереги жок.
 
 ---
 
@@ -59,7 +59,7 @@ cp -r flying_sandcastle/templates/project/.claude turna/
 > 4. Claude кыскача корутунду көрсөтөт. Туура болсо "ок" деп жаз.
 > 5. Даяр. Issue'нун шилтемеси келет.
 >
-> Иш бүткөндө ал issue'га PR шилтемеси келет, GitHub колдонмосу сага билдирүү жөнөтөт. PR'дагы **preview** шилтемесин ачып, натыйжаны текшер. Бир нерсе туура эмес болсо, ошол жерге комментарий жаз.
+> Иш бүткөндө ал issue'га PR шилтемеси келет, GitHub колдонмосу сага билдирүү жөнөтөт. PR merge болгондон кийин, болжол менен 20 мүнөттө, жаңылык **https://turna-staging.fly.dev** сайтында пайда болот. Ага демо аккаунт менен кир, мисалы `director@turna-demo.example`. Бир нерсе туура эмес болсо, жаңы идея катары айт же issue'га комментарий жаз.
 
 Кеңеш: эгер Claude skill'ди өзү колдонбосо, сессияны `/issue-intake` деп баштаса болот.
 
@@ -67,6 +67,6 @@ cp -r flying_sandcastle/templates/project/.claude turna/
 
 ## Күнүмдүк иш (сиз үчүн)
 
-1. GitHub'да `idea` label'и бар issue'ларды карайсыз: `is:open label:idea`.
-2. Жакса, `idea` label'ин алып, `Sandcastle` коёсуз. Тактоо керек болсо, комментарий жазасыз, ал кофаундерге билдирүү болуп барат.
+1. GitHub'да `idea` label'и бар issue'ларды карайсыз: `is:open label:needs-triage`.
+2. Жакса, `needs-triage` label'ин алып, `ready-for-agent` коёсуз. Тактоо керек болсо, комментарий жазасыз, ал кофаундерге билдирүү болуп барат.
 3. Кереги жок болсо, issue'ну "Close as not planned" кыласыз.
