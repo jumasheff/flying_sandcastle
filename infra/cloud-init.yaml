@@ -1,0 +1,16 @@
+#cloud-config
+# Paste into "Cloud config" when you create the Hetzner server (Ubuntu 24.04).
+# It installs the factory. You still fill in the two env files (README, step 4).
+#
+# If this repo is private, cloud-init cannot clone it: delete the runcmd
+# section and clone it by hand after you log in (README, step 3).
+
+package_update: true
+package_upgrade: true
+packages: [git]
+
+ssh_pwauth: false
+
+runcmd:
+  - git clone https://github.com/jumasheff/flying_sandcastle.git /root/flying_sandcastle
+  - /root/flying_sandcastle/infra/setup.sh > /var/log/factory-setup.log 2>&1

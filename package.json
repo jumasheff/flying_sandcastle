@@ -1,0 +1,22 @@
+{
+  "name": "flying-sandcastle",
+  "private": true,
+  "type": "module",
+  "description": "Sandcastle-based software factory: GitHub issues in, pull requests out.",
+  "scripts": {
+    "factory": "tsx sandcastle/main.mts",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@ai-hero/sandcastle": "0.14.0",
+    "tsx": "^4.23.15",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  }
+}
