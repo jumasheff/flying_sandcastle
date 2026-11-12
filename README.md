@@ -131,6 +131,10 @@ tailscale up --ssh
 
 Issue'лар бири-биринен көз каранды болсо, planner алардын тартибин сактайт. Мисалы, #5 #3'кө көз каранды болсо, #3'түн PR'ы merge болмоюнча #5 башталбайт.
 
+## Кофаундер / командалаш
+
+Техникалык эмес командалашыңыз iPhone'дон үн менен идея айтып, issue түзө алат. Кантип жөндөө керектигин [docs/cofounder.md](docs/cofounder.md) файлынан караңыз.
+
 ## Пайдалуу буйруктар
 
 Азыр иштеп жатабы, акыркы логдор:
@@ -201,3 +205,5 @@ rm -rf /var/lib/factory/project
 | `infra/setup.sh` | Серверди орнотуу (Docker, Node, gh, Tailscale, systemd) |
 | `infra/cloud-init.yaml` | Hetzner'де сервер түзүп жатканда чапталат |
 | `infra/factory.service`, `.timer` | systemd: ар 20 мүнөттө бир run |
+| `templates/project/` | Долбоордун репосуна көчүрүлүүчү файлдар (`issue-intake` skill) |
+| `docs/cofounder.md` | Кофаундерди кошуу боюнча нускама |

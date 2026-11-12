@@ -60,6 +60,7 @@ done
 gh label create "$READY_LABEL" --color 0E8A16 --description "Ready for the Sandcastle factory" --force >/dev/null
 gh label create "$REVIEW_LABEL" --color FBCA04 --description "Sandcastle opened a PR" --force >/dev/null
 gh label create "$HUMAN_LABEL" --color D93F0B --description "Sandcastle is stuck, needs a human" --force >/dev/null
+gh label create "${IDEA_LABEL:-idea}" --color C5DEF5 --description "New idea, waiting for approval" --force >/dev/null
 
 # Skip the agents (and Claude usage) when there is nothing to do.
 ready=$(gh issue list --state open --label "$READY_LABEL" --limit 1 --json number --jq length)
