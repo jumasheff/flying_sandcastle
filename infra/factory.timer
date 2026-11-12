@@ -1,0 +1,10 @@
+[Unit]
+Description=Start a Flying Sandcastle run every 20 minutes
+
+[Timer]
+OnBootSec=5min
+OnUnitInactiveSec=20min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
